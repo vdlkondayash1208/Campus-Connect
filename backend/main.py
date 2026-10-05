@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client, Client
@@ -48,6 +49,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
+
+@app.get("/health", include_in_schema=False)
+def health_check():
+    return {"status": "healthy", "service": "Campus Event & Team Finder API"}
 
 security = HTTPBearer(auto_error=False)
 
