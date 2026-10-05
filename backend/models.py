@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from datetime import datetime
 from uuid import UUID
 
@@ -43,7 +43,10 @@ class EventCreate(BaseModel):
     latitude: Optional[float] = 17.3850
     longitude: Optional[float] = 78.4867
     capacity: int = 100
+    is_team_event: Optional[bool] = False
+    min_team_size: Optional[int] = 1
     max_team_size: Optional[int] = 4
+    required_registration_fields: Optional[List[str]] = ["Full Name", "Roll Number", "Department", "GitHub URL"]
     start_at: Optional[str] = None
     deadline_at: Optional[str] = None
     expire_at: Optional[str] = None
@@ -53,3 +56,16 @@ class EventCreate(BaseModel):
     registration_deadline: Optional[str] = None
     required_skills: Optional[List[str]] = []
 
+class RegistrationRequest(BaseModel):
+    credentials: Optional[Dict[str, Any]] = {}
+
+class TeamCreateRequest(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    preferred_skills: Optional[List[str]] = []
+
+class TeamJoinRequest(BaseModel):
+    team_code: str
+
+class TeamInviteRequest(BaseModel):
+    receiver_id: str

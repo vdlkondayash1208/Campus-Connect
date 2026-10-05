@@ -68,3 +68,8 @@ Thumbs.db
 # Temporary Folders
 temp_repo/
 scratch/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
