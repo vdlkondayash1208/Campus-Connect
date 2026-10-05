@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import create_client, Client
@@ -50,8 +51,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+dist_dirs = [
+    os.path.join(backend_dir, "dist"),
+    os.path.join(backend_dir, "..", "dist"),
+    os.path.join(backend_dir, "..", "frontend", "dist")
+]
+DIST_DIR = None
+for d in dist_dirs:
+    if os.path.isdir(d) and os.path.exists(os.path.join(d, "index.html")):
+        DIST_DIR = os.path.abspath(d)
+        break
+
+if DIST_DIR:
+    assets_dir = os.path.join(DIST_DIR, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
 @app.get("/", include_in_schema=False)
 def root():
+    if DIST_DIR:
+        index_file = os.path.join(DIST_DIR, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
     return RedirectResponse(url="/docs")
 
 @app.get("/health", include_in_schema=False)
@@ -821,3 +842,15 @@ def purge_data(user_ctx: dict = Depends(require_admin)):
         "success": True,
         "message": "All mock and placeholder data purged successfully across tables."
     }
+
+# Catch-all route for single-page app (SPA) client-side routing (/dashboard, /events, /admin/*, etc.)
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_spa(full_path: str):
+    if DIST_DIR:
+        file_path = os.path.join(DIST_DIR, full_path)
+        if full_path and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        index_file = os.path.join(DIST_DIR, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+    return RedirectResponse(url="/docs")

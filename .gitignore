@@ -4,7 +4,8 @@ node_modules/
 .pnp.js
 
 # Production Build Outputs
-dist/
+/dist/
+/frontend/dist/
 dist-ssr/
 build/
 *.local
@@ -30,8 +31,8 @@ venv/
 ENV/
 build/
 develop-eggs/
-dist/
 downloads/
+!backend/dist/**
 eggs/
 .eggs/
 lib/
